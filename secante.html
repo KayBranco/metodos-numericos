@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Método da Secante</title>
+    <style>
+        body {
+            font-family: 'Verdana', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #74b9ff, #a29bfe);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 20px;
+            padding: 40px 30px;
+            max-width: 700px;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            color: #ffeaa7;
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            margin-top: 15px;
+            color: #dfe6e9;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #55efc4;
+            color: #2d3436;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            background-color: #00b894;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fff;
+            color: #2d3436;
+            border-radius: 8px;
+            font-size: 1em;
+            text-align: left;
+            white-space: pre-line; /* Para exibir as quebras de linha */
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #74b9ff;
+            font-size: 1em;
+            font-weight: bold;
+            border-bottom: 2px solid transparent;
+            transition: border-bottom 0.3s;
+        }
+
+        .back-btn:hover {
+            border-bottom: 2px solid #74b9ff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Calculadora do Método da Secante</h1>
+        
+        <form onsubmit="event.preventDefault(); calcularSecante();">
+            <label for="funcao">Função (em termos de x):</label>
+            <input type="text" id="funcao" placeholder="Exemplo: x^3 - x - 2" required />
+
+            <label for="x0">Valor inicial (x0):</label>
+            <input type="number" id="x0" placeholder="Digite o valor inicial (x0)" required />
+
+            <label for="x1">Segundo valor inicial (x1):</label>
+            <input type="number" id="x1" placeholder="Digite o segundo valor inicial (x1)" required />
+
+            <label for="tolerancia">Tolerância (ex.: 0.01 ou 10^-2):</label>
+            <input type="text" id="tolerancia" placeholder="Digite a tolerância" required />
+
+            <button type="submit">Calcular</button>
+        </form>
+
+        <div class="result" id="resultado"></div>
+
+        <a href="index.html" class="back-btn">Voltar ao Menu Principal</a>
+    </div>
+
+    <script>
+        function processarExpressao(expressao) {
+            expressao = expressao.replace(/x\^(\d+)/g, 'Math.pow(x, $1)');
+            expressao = expressao.replace(/\bln\(([^)]+)\)/g, 'Math.log($1)');
+            expressao = expressao.replace(/\blog\(([^,]+),\s*([^)]+)\)/g, '(Math.log($1) / Math.log($2))');
+            return expressao;
+        }
+
+        function processarTolerancia(toleranciaStr) {
+            if (toleranciaStr.includes('^')) {
+                return eval(toleranciaStr.replace(/10\^(-?\d+)/, 'Math.pow(10, $1)'));
+            }
+            return parseFloat(toleranciaStr);
+        }
+
+        function funcao(x, expressao) {
+            try {
+                let expressaoProcessada = processarExpressao(expressao);
+                return eval(expressaoProcessada.replace(/x/g, `(${x})`));
+            } catch {
+                document.getElementById('resultado').innerText = "Erro na função fornecida. Verifique a expressão.";
+                throw new Error("Erro na expressão.");
+            }
+        }
+
+        function calcularSecante() {
+            let funcaoStr = document.getElementById('funcao').value;
+            let x0 = parseFloat(document.getElementById('x0').value);
+            let x1 = parseFloat(document.getElementById('x1').value);
+            let toleranciaStr = document.getElementById('tolerancia').value;
+
+            let tolerancia = processarTolerancia(toleranciaStr);
+
+            if (isNaN(x0) || isNaN(x1) || isNaN(tolerancia)) {
+                document.getElementById('resultado').innerText = "Por favor, insira todos os valores corretamente.";
+                return;
+            }
+
+            let iteracoes = 0, x2, fx0, fx1;
+            let resultado = "Iterações:\n";
+
+            while (true) {
+                fx0 = funcao(x0, funcaoStr);
+                fx1 = funcao(x1, funcaoStr);
+
+                if (fx1 - fx0 === 0) {
+                    document.getElementById('resultado').innerText = "Erro: Divisão por zero detectada. O método falhou.";
+                    return;
+                }
+
+                x2 = x1 - (fx1 * (x1 - x0)) / (fx1 - fx0);
+                iteracoes++;
+
+                resultado += `Iteração ${iteracoes}: x0 = ${x0.toFixed(6)}, x1 = ${x1.toFixed(6)}, x2 = ${x2.toFixed(6)}, f(x2) = ${funcao(x2, funcaoStr).toFixed(6)}\n`;
+
+                if (Math.abs(x2 - x1) < tolerancia) {
+                    break;
+                }
+
+                x0 = x1;
+                x1 = x2;
+            }
+
+            document.getElementById('resultado').innerText = resultado + `\nResultado: x = ${x2.toFixed(6)}, f(x) = ${funcao(x2, funcaoStr).toFixed(6)}`;
+        }
+    </script>
+
+</body>
+</html>

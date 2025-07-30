@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Métodos Numéricos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f3f3;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            background-color: #ddd;
+            transition: background-color 0.3s;
+        }
+
+        .tab-button.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        select, input, button {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 8px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #chartCanvas {
+            max-width: 100%;
+            margin-top: 20px;
+        }
+    </style>
+    <!-- Adicione o Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Calculadora de Métodos Numéricos</h1>
+
+        <!-- Navegação das Abas -->
+        <div class="tabs">
+            <button class="tab-button active" onclick="openTab('root-finding')">Métodos de Raiz</button>
+            <button class="tab-button" onclick="openTab('interpolation')">Interpolação</button>
+            <button class="tab-button" onclick="openTab('linear-systems')">Sistemas Lineares</button>
+            <button class="tab-button" onclick="openTab('approximation')">Aproximação</button>
+        </div>
+
+        <!-- Conteúdo da Aba: Métodos de Raiz -->
+        <div id="root-finding" class="tab-content active">
+            <select id="rootMethodSelect">
+                <option value="bisseccao">Método da Bisseção</option>
+                <option value="newtonRaphson">Método de Newton-Raphson</option>
+                <option value="secante">Método da Secante</option>
+            </select>
+            <div id="rootInputsContainer"></div>
+            <button onclick="calculateRoot()">Calcular</button>
+            <div id="rootResultsContainer"></div>
+        </div>
+
+        <!-- Conteúdo da Aba: Interpolação -->
+        <div id="interpolation" class="tab-content">
+            <select id="interpolationMethodSelect">
+                <option value="lagrange">Interpolação de Lagrange</option>
+                <option value="newtonGregory">Interpolação de Newton-Gregory</option>
+            </select>
+            <div id="interpolationInputsContainer"></div>
+            <button onclick="calculateInterpolation()">Calcular</button>
+            <div id="interpolationResultsContainer"></div>
+            <canvas id="chartCanvasInterpolation"></canvas>
+        </div>
+
+        <!-- Conteúdo da Aba: Sistemas Lineares -->
+        <div id="linear-systems" class="tab-content">
+            <select id="linearSystemMethodSelect">
+                <option value="eliminacaoGauss">Eliminação de Gauss</option>
+                <option value="gaussJacobi">Método de Gauss-Jacobi</option>
+                <option value="gaussSeidel">Método de Gauss-Seidel</option>
+            </select>
+            <div id="linearSystemInputsContainer"></div>
+            <button onclick="calculateLinearSystem()">Calcular</button>
+            <div id="linearSystemResultsContainer"></div>
+        </div>
+
+        <!-- Conteúdo da Aba: Aproximação -->
+        <div id="approximation" class="tab-content">
+            <select id="approximationMethodSelect">
+                <option value="minimosQuadrados">Método dos Mínimos Quadrados</option>
+            </select>
+            <div id="approximationInputsContainer"></div>
+            <button onclick="calculateApproximation()">Calcular</button>
+            <div id="approximationResultsContainer"></div>
+            <canvas id="chartCanvasApproximation"></canvas>
+        </div>
+    </div>
+
+    <script>
+        function openTab(tabId) {
+            // Altera a aba ativa
+            const tabs = document.querySelectorAll(".tab-content");
+            tabs.forEach(tab => tab.classList.remove("active"));
+
+            const tabButtons = document.querySelectorAll(".tab-button");
+            tabButtons.forEach(button => button.classList.remove("active"));
+
+            document.getElementById(tabId).classList.add("active");
+            document.querySelector(`.tab-button[onclick="openTab('${tabId}')"]`).classList.add("active");
+        }
+
+        function calculateRoot() {
+            const method = document.getElementById("rootMethodSelect").value;
+            const inputs = document.querySelectorAll("#rootInputsContainer input");
+            const values = {};
+
+            inputs.forEach(input => {
+                values[input.name] = parseFloat(input.value);
+            });
+
+            let result = "Resultado do cálculo de raízes será exibido aqui.";
+            document.getElementById("rootResultsContainer").innerText = result;
+        }
+
+        function calculateInterpolation() {
+            const method = document.getElementById("interpolationMethodSelect").value;
+            const values = {};  // Captura valores de entrada
+            let result = "Resultado do cálculo de interpolação será exibido aqui.";
+
+            document.getElementById("interpolationResultsContainer").innerText = result;
+            plotChart('chartCanvasInterpolation', [1, 2, 3], [1, 4, 9]); // Exemplo de gráfico
+        }
+
+        function calculateLinearSystem() {
+            const method = document.getElementById("linearSystemMethodSelect").value;
+            const values = {};  // Captura valores de entrada
+            let result = "Resultado do cálculo de sistemas lineares será exibido aqui.";
+
+            document.getElementById("linearSystemResultsContainer").innerText = result;
+        }
+
+        function calculateApproximation() {
+            const method = document.getElementById("approximationMethodSelect").value;
+            const values = {};  // Captura valores de entrada
+            let result = "Resultado do cálculo de aproximação será exibido aqui.";
+
+            document.getElementById("approximationResultsContainer").innerText = result;
+            plotChart('chartCanvasApproximation', [1, 2, 3, 4], [2, 3, 5, 4]); // Exemplo de gráfico
+        }
+
+        function plotChart(canvasId, xData, yData) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            if (window[canvasId]) window[canvasId].destroy();
+
+            window[canvasId] = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Dados',
+                        data: xData.map((x, i) => ({ x: x, y: yData[i] })),
+                        backgroundColor: 'rgba(75, 192, 192, 1)'
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: { type: 'linear', position: 'bottom' },
+                        y: { type: 'linear' }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

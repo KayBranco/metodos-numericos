@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Método de Mínimos Quadrados</title>
+    <style>
+        body {
+            font-family: 'Verdana', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #74b9ff, #a29bfe);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 20px;
+            padding: 40px 30px;
+            max-width: 700px;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            color: #ffeaa7;
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            margin-top: 15px;
+            color: #dfe6e9;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #55efc4;
+            color: #2d3436;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            background-color: #00b894;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fff;
+            color: #2d3436;
+            border-radius: 8px;
+            font-size: 1em;
+            text-align: left;
+            white-space: pre-line;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #74b9ff;
+            font-size: 1em;
+            font-weight: bold;
+            border-bottom: 2px solid transparent;
+            transition: border-bottom 0.3s;
+        }
+
+        .back-btn:hover {
+            border-bottom: 2px solid #74b9ff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Método de Mínimos Quadrados</h1>
+        
+        <form onsubmit="event.preventDefault(); calcularMinimosQuadrados();">
+            <label for="pontos">Pontos (formato: x1,y1 x2,y2 ...):</label>
+            <input type="text" id="pontos" placeholder="Exemplo: 1,2 2,3 3,5" required />
+
+            <button type="submit">Calcular</button>
+        </form>
+
+        <div class="result" id="resultado"></div>
+
+        <a href="index.html" class="back-btn">Voltar ao Menu Principal</a>
+    </div>
+
+    <script>
+        function parsePontos(pontosStr) {
+            return pontosStr.split(' ').map(par => par.split(',').map(Number));
+        }
+
+        function calcularMinimosQuadrados() {
+            const pontosStr = document.getElementById('pontos').value;
+            let pontos;
+
+            try {
+                pontos = parsePontos(pontosStr);
+            } catch {
+                document.getElementById('resultado').innerText = "Erro: Insira os pontos no formato correto.";
+                return;
+            }
+
+            if (pontos.some(par => par.length !== 2)) {
+                document.getElementById('resultado').innerText = "Erro: Cada ponto deve conter dois valores (x,y).";
+                return;
+            }
+
+            const n = pontos.length;
+            let somaX = 0, somaY = 0, somaXY = 0, somaX2 = 0;
+
+            for (const [x, y] of pontos) {
+                somaX += x;
+                somaY += y;
+                somaXY += x * y;
+                somaX2 += x * x;
+            }
+
+            const mediaX = somaX / n;
+            const mediaY = somaY / n;
+
+            const a1 = (somaXY - n * mediaX * mediaY) / (somaX2 - n * mediaX ** 2);
+            const a0 = mediaY - a1 * mediaX;
+
+            document.getElementById('resultado').innerText = 
+                `Equação da Reta de Ajuste:\n` +
+                `y = ${a0.toFixed(6)} + ${a1.toFixed(6)}x\n\n` +
+                `Coeficiente Linear (a0): ${a0.toFixed(6)}\n` +
+                `Coeficiente Angular (a1): ${a1.toFixed(6)}`;
+        }
+    </script>
+
+</body>
+</html>

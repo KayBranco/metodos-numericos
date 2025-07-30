@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Bisseção</title>
+    <style>
+        body {
+            font-family: 'Verdana', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #74b9ff, #a29bfe);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 20px;
+            padding: 40px 30px;
+            max-width: 700px;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            color: #ffeaa7;
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            margin-top: 15px;
+            color: #dfe6e9;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #55efc4;
+            color: #2d3436;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            background-color: #00b894;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fff;
+            color: #2d3436;
+            border-radius: 8px;
+            font-size: 1em;
+            text-align: left;
+            white-space: pre-line; /* Para exibir as quebras de linha */
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #74b9ff;
+            font-size: 1em;
+            font-weight: bold;
+            border-bottom: 2px solid transparent;
+            transition: border-bottom 0.3s;
+        }
+
+        .back-btn:hover {
+            border-bottom: 2px solid #74b9ff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Calculadora de Bissecção</h1>
+        
+        <form onsubmit="event.preventDefault(); calcularBissecao();">
+            <label for="funcao">Função (em termos de x):</label>
+            <input type="text" id="funcao" placeholder="Exemplo: x^3 - x - 2" required />
+
+            <label for="a">Valor de a:</label>
+            <input type="number" id="a" placeholder="Digite o valor de a" required />
+
+            <label for="b">Valor de b:</label>
+            <input type="number" id="b" placeholder="Digite o valor de b" required />
+
+            <label for="tolerancia">Tolerância (ex.: 0.01 ou 10^-2):</label>
+            <input type="text" id="tolerancia" placeholder="Digite a tolerância" required />
+
+            <button type="submit">Calcular</button>
+        </form>
+
+        <div class="result" id="resultado"></div>
+
+        <a href="index.html" class="back-btn">Voltar ao Menu Principal</a>
+    </div>
+
+    <script>
+        // Funções para processar a expressão, tolerância e realizar o cálculo da bisseção (como no seu código base)
+        function processarExpressao(expressao) {
+            expressao = expressao.replace(/x\^(\d+)/g, 'Math.pow(x, $1)');
+            expressao = expressao.replace(/\bln\(([^)]+)\)/g, 'Math.log($1)');
+            expressao = expressao.replace(/\blog\(([^,]+),\s*([^)]+)\)/g, '(Math.log($1) / Math.log($2))');
+            return expressao;
+        }
+
+        function processarTolerancia(toleranciaStr) {
+            if (toleranciaStr.includes('^')) {
+                return eval(toleranciaStr.replace(/10\^(-?\d+)/, 'Math.pow(10, $1)'));
+            }
+            return parseFloat(toleranciaStr);
+        }
+
+        function funcao(x, expressao) {
+            try {
+                let expressaoProcessada = processarExpressao(expressao);
+                return eval(expressaoProcessada.replace(/x/g, `(${x})`));
+            } catch {
+                document.getElementById('resultado').innerText = "Erro na função fornecida. Verifique a expressão.";
+                throw new Error("Erro na expressão.");
+            }
+        }
+
+        function calcularBissecao() {
+            let funcaoStr = document.getElementById('funcao').value;
+            let a = parseFloat(document.getElementById('a').value);
+            let b = parseFloat(document.getElementById('b').value);
+            let toleranciaStr = document.getElementById('tolerancia').value;
+
+            let tolerancia = processarTolerancia(toleranciaStr);
+
+            if (isNaN(a) || isNaN(b) || isNaN(tolerancia)) {
+                document.getElementById('resultado').innerText = "Por favor, insira todos os valores corretamente.";
+                return;
+            }
+
+            let c, fa, fb, fc;
+            try {
+                fa = funcao(a, funcaoStr);
+                fb = funcao(b, funcaoStr);
+            } catch {
+                return;
+            }
+
+            if (fa * fb > 0) {
+                document.getElementById('resultado').innerText = "Os sinais de f(a) e f(b) são iguais. O método de bisseção não pode ser aplicado.";
+                return;
+            }
+
+            let iteracoes = 0;
+            let resultado = "Iterações:\n";
+            while (Math.abs(b - a) > tolerancia) {
+                c = (a + b) / 2;
+                fc = funcao(c, funcaoStr);
+                iteracoes++;
+
+                resultado += `Iteração ${iteracoes}: c = ${c.toFixed(6)}, f(c) = ${fc.toFixed(6)}\n`;
+
+                if (Math.abs(fc) < tolerancia || Math.abs(b - a) < tolerancia) break;
+
+                if (fa * fc < 0) {
+                    b = c;
+                    fb = fc;
+                } else {
+                    a = c;
+                    fa = fc;
+                }
+            }
+
+            document.getElementById('resultado').innerText = resultado + `\nResultado: c = ${c.toFixed(6)}, f(c) = ${fc.toFixed(6)}`;
+        }
+    </script>
+
+</body>
+</html>
