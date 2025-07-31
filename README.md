@@ -109,7 +109,7 @@ Coeficientes: a = 0.5, b = -0.5, c = 2.0
 
 1. Clone ou baixe este repositório:
    ```bash
-   git clone https://github.com/seu-usuario/seu-repositorio.git
+   https://github.com/KayBranco/metodos-numericos
    ```
 2. Abra o arquivo `index.html` no seu navegador.
 3. Clique em qualquer botão para explorar os métodos numéricos.
